@@ -1,0 +1,26 @@
+important = ["urgent", "sign", "contract", "review", "board meeting", "NDA", "introduction", "allocation", "deadline", "approval", "action required"]
+
+noise = ["newsletter", "webinar", "invoice", "prize", "click here", "daily summary", "morning note", "reminder", "deals", "unsubscribe", "notification", "viewed your profile", "weekly", "browse"]
+
+sender_domains = ["ir@blackrock.com", "s.mitchell@granthamlaw.com", "d.chen@alphaventures.vc", "boardsec@nexuscorp.com", "legal@oriongroup.com"]
+
+def classify(sender, subject, body):
+    # combined subject and body
+    comb = (subject + " " + body).lower()
+
+    # is the sender in the important sender's list?
+    for email in sender_domains:
+        if (sender.lower() == email.lower()): # emails are case-insensitive by standard, using email and not domain means you're trusting a specific person, not everyone from that comapny
+            return "Important"
+    
+    # does contain important keyword?
+    for word in important:
+        if (word in comb):
+            return "Important"
+        
+    # does contain a noise keyword?
+    for word in noise:
+        if (word in comb):
+            return "Noise"
+        
+    return "Normal"

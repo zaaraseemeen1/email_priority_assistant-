@@ -1,38 +1,40 @@
 import csv
-
-important = ["urgent", "sign", "contract", "review", "board meeting", "NDA", "introduction", "allocation", "deadline", "approval", "action required"]
-
-noise = ["newsletter", "webinar", "invoice", "prize", "click here", "daily summary", "morning note", "reminder", "deals", "unsubscribe", "notification", "viewed your profile", "weekly", "browse"]
-
-sender_domains = ["ir@blackrock.com", "s.mitchell@granthamlaw.com", "d.chen@alphaventures.vc", "boardsec@nexuscorp.com", "legal@oriongroup.com"]
+import boto3
+import json
 
 def classify(sender, subject, body):
-    # combined subject and body
-    comb = (subject + " " + body).lower()
 
-    # is the sender in the important sender's list?
-    for email in sender_domains:
-        if (sender.lower() == email.lower()):
-            return "Important"
+    # creating a connection to bedrock / an object that knows how to communicate with bedrock
+    bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
     
-    # does contain important keyword?
-    for word in important:
-        if (word in comb):
-            return "Important"
-        
-    # does contain a noise keyword?
-    for word in noise:
-        if (word in comb):
-            return "Noise"
-        
-    return "Normal"
+    # This is your prompt — notice the f before the triple quotes
+    # That makes it an f-string so {sender}, {subject}, {body} get filled in automatically
+    prompt = f"""You are an email classifier. Classify this email into exactly one category. Sender: {sender} Subject: {subject} Body: {body} Reply with only one word: Important, Normal, or Noise."""
+
+    # actual API call/sends request to Claude
+    response = bedrock.invoke_model(
+        modelId="us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        body=json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 10,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        }),
+        contentType="application/json", # I'm sending a JSON
+        accept="application/json", # provide your answer in a JSON
+    )
+
+    result = json.loads(response["body"].read()) # .read() gets the raw JSON text, .loads( ) converts that into a Python dictionary
+    return result["content"][0]["text"].strip() 
+
 
 def main():
     important_count = 0
     noise_count = 0
     normal_count = 0
 
-    # with keyowrd takes care of closing file for me
+    # with keyword takes care of closing file for me
     with open("inbox.csv") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -48,6 +50,5 @@ def main():
         print(f"Number of emails classified as important: {important_count}")
         print(f"Number of emails classified as normal: {normal_count}")
         print(f"Number of emails classified as noise: {noise_count}")
-
 
 main()
