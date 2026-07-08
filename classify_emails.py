@@ -9,7 +9,50 @@ def classify(sender, subject, body):
     
     # This is your prompt — notice the f before the triple quotes
     # That makes it an f-string so {sender}, {subject}, {body} get filled in automatically
-    prompt = f"""You are an email classifier. Classify this email into exactly one category. Sender: {sender} Subject: {subject} Body: {body} Reply with only one word: Important, Normal, or Noise."""
+    prompt = f"""You are an executive email assistant. Your job is to classify every email into exactly one of these categories.
+
+                    Definitions:
+
+                    Important:
+                    - Requires action, approval, review, signature, or a reply.
+                    - Time-sensitive or has a deadline.
+                    - Legal, financial, investment, board, contract, client, or executive communication.
+                    - High-priority project updates or decisions.
+
+                    Normal:
+                    - Legitimate work-related email that does not require immediate action.
+                    - General updates from coworkers, clients, or business partners.
+                    - Reports, research, confirmations, or conversations that are useful but not urgent.
+
+                    Noise:
+                    - Marketing or promotional emails.
+                    - Newsletters.
+                    - Advertisements.
+                    - Social media notifications.
+                    - Automated reminders.
+                    - Generic announcements.
+                    - Sales emails.
+                    - Messages that can safely be ignored without affecting work.
+
+                    Email:
+
+                    Sender:
+                    {sender}
+
+                    Subject:
+                    {subject}
+
+                    Body:
+                    {body}
+
+                    Rules:
+                    - Choose exactly ONE category.
+                    - Reply with only one word.
+                    - Valid responses are:
+                    Important
+                    Normal
+                    Noise
+                    """
 
     # actual API call/sends request to Claude
     response = bedrock.invoke_model(
