@@ -3,7 +3,7 @@
 // onclick of classify fetch with three values sent as JSON to provided link
 import {useState} from "react";
 
-function EmailForm() {
+function EmailForm(props) {
 
     // piece of state that represents the email the user wants classified 
     const [email, setEmail] = useState(
@@ -14,11 +14,12 @@ function EmailForm() {
         }
     );
 
-    // setting aside a piece of state to hold the result of the email (which will be just a string)
-    const [result, setResult] = useState("")
+    // setting aside a piece of state to hold whether the button is loading or not
+    const [loading, setLoading] = useState(false)
 
     // async function means this function is allowed to await things inside of it
     const submitEmail = async () => {
+        setLoading(true);
         const response = await fetch(`http://localhost:5000/classify`, {
             method: "POST", // here's some data I want you to process/create something from
             headers: { "Content-Type": "application/json" }, // tells the backend to parse the text as JSON
@@ -26,8 +27,8 @@ function EmailForm() {
         });
         
         const classification = await response.json(); // network requests take time
-        setResult(classification.result); // using key to pull out value
-
+        props.setResult(classification.result); // using key to pull out value
+        setLoading(false);
     }
 
    return (
@@ -58,8 +59,10 @@ function EmailForm() {
                 id ="body">
             </input>   
 
-            <button>Classify</button>
+            {/* loading is a boolean variable that represents if a fetch is in progress or not */}
+            <button disabled = {loading}>Classify</button>
         </form>
     </div>
    );
 }
+export default EmailForm;

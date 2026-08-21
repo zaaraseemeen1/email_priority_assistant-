@@ -14,3 +14,5 @@ function ResultDisplay(prop) {
         );
     }
 }
+
+export default ResultDisplay;
